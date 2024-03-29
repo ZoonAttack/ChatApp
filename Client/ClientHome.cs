@@ -113,10 +113,17 @@ namespace Client
         }
         private void ClientHome_FormClosing(object sender, FormClosingEventArgs e)
         {
-            message = new ClientMessage("Disconnected..", ActionType.DISCONNECTED);
-            Send(message);
-            isReading = false;
-            clientSocket.Close();
+            try
+            {
+                message = new ClientMessage("Disconnected..", ActionType.DISCONNECTED);
+                Send(message);
+                isReading = false;
+                clientSocket.Shutdown(SocketShutdown.Both);
+            }
+            finally
+            {
+                clientSocket.Close();
+            }
         }
     }
 }
