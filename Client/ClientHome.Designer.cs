@@ -32,11 +32,11 @@
             label1 = new Label();
             TB_Username = new TextBox();
             GP_Chat = new GroupBox();
+            TB_Message = new TextBox();
+            TB_ChatBox = new TextBox();
+            BTN_Send = new Button();
             label2 = new Label();
             TB_Address = new TextBox();
-            BTN_Send = new Button();
-            TB_ChatBox = new TextBox();
-            TB_Message = new TextBox();
             GP_Chat.SuspendLayout();
             SuspendLayout();
             // 
@@ -85,6 +85,37 @@
             GP_Chat.TabStop = false;
             GP_Chat.Text = "Chat";
             // 
+            // TB_Message
+            // 
+            TB_Message.Font = new Font("OCRB", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            TB_Message.Location = new Point(0, 267);
+            TB_Message.Multiline = true;
+            TB_Message.Name = "TB_Message";
+            TB_Message.Size = new Size(480, 67);
+            TB_Message.TabIndex = 7;
+            // 
+            // TB_ChatBox
+            // 
+            TB_ChatBox.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            TB_ChatBox.Location = new Point(0, 22);
+            TB_ChatBox.Multiline = true;
+            TB_ChatBox.Name = "TB_ChatBox";
+            TB_ChatBox.Size = new Size(574, 219);
+            TB_ChatBox.TabIndex = 6;
+            // 
+            // BTN_Send
+            // 
+            BTN_Send.FlatStyle = FlatStyle.Popup;
+            BTN_Send.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            BTN_Send.ForeColor = Color.Maroon;
+            BTN_Send.Location = new Point(499, 277);
+            BTN_Send.Name = "BTN_Send";
+            BTN_Send.Size = new Size(75, 41);
+            BTN_Send.TabIndex = 6;
+            BTN_Send.Text = "SEND";
+            BTN_Send.UseVisualStyleBackColor = true;
+            BTN_Send.Click += BTN_Send_Click;
+            // 
             // label2
             // 
             label2.AutoSize = true;
@@ -102,36 +133,6 @@
             TB_Address.Name = "TB_Address";
             TB_Address.Size = new Size(151, 23);
             TB_Address.TabIndex = 5;
-            // 
-            // BTN_Send
-            // 
-            BTN_Send.FlatStyle = FlatStyle.Popup;
-            BTN_Send.Font = new Font("Segoe UI", 15F, FontStyle.Regular, GraphicsUnit.Point);
-            BTN_Send.ForeColor = Color.Maroon;
-            BTN_Send.Location = new Point(499, 277);
-            BTN_Send.Name = "BTN_Send";
-            BTN_Send.Size = new Size(75, 41);
-            BTN_Send.TabIndex = 6;
-            BTN_Send.Text = "SEND";
-            BTN_Send.UseVisualStyleBackColor = true;
-            // 
-            // TB_ChatBox
-            // 
-            TB_ChatBox.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            TB_ChatBox.Location = new Point(0, 22);
-            TB_ChatBox.Multiline = true;
-            TB_ChatBox.Name = "TB_ChatBox";
-            TB_ChatBox.Size = new Size(574, 219);
-            TB_ChatBox.TabIndex = 6;
-            // 
-            // TB_Message
-            // 
-            TB_Message.Font = new Font("OCRB", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            TB_Message.Location = new Point(0, 267);
-            TB_Message.Multiline = true;
-            TB_Message.Name = "TB_Message";
-            TB_Message.Size = new Size(480, 67);
-            TB_Message.TabIndex = 7;
             // 
             // ClientHome
             // 

@@ -4,7 +4,7 @@ using System.Net.Sockets;
 
 namespace Communicator
 {
-    internal class Utility
+    public class Utility
     {
         public static bool SocketConnected(Socket s)
         {
