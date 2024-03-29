@@ -1,7 +1,4 @@
-﻿
-using System.Net.Sockets;
-
-
+﻿using System.Net.Sockets;
 namespace Communicator
 {
     public class Utility

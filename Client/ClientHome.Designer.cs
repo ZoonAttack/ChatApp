@@ -147,6 +147,7 @@
             Controls.Add(BTN_Connect);
             Name = "ClientHome";
             Text = "Client";
+            FormClosing += ClientHome_FormClosing;
             GP_Chat.ResumeLayout(false);
             GP_Chat.PerformLayout();
             ResumeLayout(false);

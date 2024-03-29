@@ -9,7 +9,7 @@ namespace Server
 
 
         bool flag = false;
-
+        bool isReading = true;
         List<Client> clients = new List<Client>();
         public ServerHome()
         {
@@ -28,71 +28,95 @@ namespace Server
         }
         private void Listening()
         {
-            while(flag)
+            while (flag)
             {
-                serverSocket.Listen(0);
-                Socket clientSocket = serverSocket.Accept();
-                Client client = new Client(clientSocket, $"Guest_{Random.Shared.Next()}");
-                clients.Add(client);
-                Thread clientThread = new Thread(() => ClientConnection(client));
-                clientThread.Start();
+                //try
+                //{
+                    serverSocket.Listen(0);
+                    Socket clientSocket = serverSocket.Accept();
+
+                    Client client = new Client(clientSocket, $"Guest_{Random.Shared.Next()}");
+                    clients.Add(client);
+                    Thread clientThread = new Thread(() => ClientConnection(client));
+                    clientThread.Start();
+                //}
+                //catch (SocketException soex)
+                //{
+                //    serverSocket.Dispose();
+                //    clients.RemoveAll(clients.Remove);
+                //    UpdateUI(TB_Log, soex.Message);
+                //}
             }
+            serverSocket.Close();
         }
         private void ClientConnection(Client client)
         {
             byte[] buffer;
             int bytesRead = 1;
-            do
+            while (isReading)
             {
-                using (var ms = new MemoryStream())
+                if (!Utility.SocketConnected(client.Socket))
                 {
-                    using (var br = new BinaryReader(ms))
+                    isReading = false;
+                    return;
+                }
+                try
+                {
+                    buffer = new byte[sizeof(int)];
+                    bytesRead = client.Socket.Receive(buffer);
+                    if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
+
+                    int size = BitConverter.ToInt32(buffer, 0);
+                    buffer = new byte[size];
+                    bytesRead = client.Socket.Receive(buffer);
+                    if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
+
+                    using var ms = new MemoryStream(buffer);
+                    using var br = new BinaryReader(ms);
+                    ActionType type = (ActionType)br.ReadInt16();
+                    switch (type)
                     {
-                        if (Utility.SocketConnected(client.Socket))
-                        {
-                            try
-                            {
-                                buffer = new byte[sizeof(int)];
-                                bytesRead = client.Socket.Receive(buffer);
-                                if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
-
-                                int size = BitConverter.ToInt32(buffer, 0);
-                                buffer = new byte[size];
-                                bytesRead = client.Socket.Receive(buffer);
-                                if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
-
-                                ActionType type = (ActionType)br.ReadInt16();
-                                switch (type)
-                                {
-                                    case ActionType.MESSAGE:
-                                        string messageReceived = br.ReadString();
-                                        TB_Log.AppendText($"({client.Name}) sent: {messageReceived}{Environment.NewLine}");
-                                        break;
-                                    case ActionType.USERNAME:
-                                        messageReceived = br.ReadString();
-                                        client.Name = messageReceived;
-                                        TB_Log.AppendText($"Set Client: {client.Name}'s name to {messageReceived}");
-                                        break;
-                                }
-                            }
-                            catch (Exception ex)
-                            {
-                                MessageBox.Show(ex.Message);
-                            }
-
-                        }
-                        else
-                        {
-                            TB_Log.AppendText($"Client({client.Name}) has disconnected from the server");
+                        case ActionType.MESSAGE:
+                            string messageReceived = br.ReadString();
+                            UpdateUI(TB_Log, $"({client.Name}) sent: {messageReceived}{Environment.NewLine}");
+                            break;
+                        case ActionType.USERNAME:
+                            messageReceived = br.ReadString();
+                            client.Name = messageReceived;
+                            UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
+                            break;
+                        case ActionType.DISCONNECTED:
+                            messageReceived = br.ReadString();
                             clients.Remove(client);
-
-                        }
+                            UpdateUI(TB_Log, $"{client.Name} {messageReceived}");
+                            break;
                     }
                 }
+                catch(SocketException soex)
+                {
+                    serverSocket.Dispose();
+                    clients.RemoveAll(clients.Remove);
+                    UpdateUI(TB_Log, soex.Message);
+                }
+            }
+        }
+        private void UpdateUI(TextBox tb, string text)
+        {
+            if (tb.InvokeRequired)
+            {
+                tb.Invoke(new Action(() => UpdateUI(tb, text)));
+            }
+            else
+            {
+                tb.AppendText($"{text}{Environment.NewLine}");
+            }
+        }
 
-
-            } while (bytesRead > 0);
-
+        private void ServerHome_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            isReading = false;
+            serverSocket.Close();
+            Environment.Exit(0);
         }
     }
 }
