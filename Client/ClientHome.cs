@@ -26,7 +26,7 @@ namespace Client
                 {
                     //Send username
                     message = new ClientMessage(TB_Username.Text, ActionType.USERNAME);
-                    Send(message);
+                    Utility.Send(clientSocket, message);
                     Thread incomingDataThread = new Thread(ReadingData);
                     incomingDataThread.Start();
                 }
@@ -40,7 +40,7 @@ namespace Client
         private void BTN_Send_Click(object sender, EventArgs e)
         {
             message = new ClientMessage(TB_Message.Text, ActionType.MESSAGE);
-            Send(message);
+            Utility.Send(clientSocket, message);
         }
         private void ReadingData()
         {
@@ -60,6 +60,7 @@ namespace Client
                 //{
                     buffer = new byte[sizeof(int)];
                     bytesRead = clientSocket.Receive(buffer);
+                    if (bytesRead == 0) return;
                     if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
 
                     int size = BitConverter.ToInt32(buffer, 0);
@@ -68,12 +69,28 @@ namespace Client
                     if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
 
                     ActionType type = (ActionType)br.ReadInt16();
+                    string messageReceived;
                     switch (type)
                     {
                         case ActionType.MESSAGE:
-                            string messageReceived = br.ReadString();
+                            messageReceived = br.ReadString();
                             UpdateUI(TB_ChatBox, $"{messageReceived}{Environment.NewLine}");
                             break;
+                        case ActionType.DISCONNECTED:
+                            messageReceived = br.ReadString();
+                            isReading = false;
+                            UpdateUI(TB_ChatBox, messageReceived);
+                        //if(Utility.SocketConnected(clientSocket) && clientSocket != null)
+                        //    try
+                        //    {
+                        //        clientSocket.Shutdown(SocketShutdown.Both);
+                        //    }
+                        //    finally
+                        //    {
+                        //        clientSocket.Close();
+                        //    }
+                        //    return;
+                        return;
                     }
                 //}
                 //catch (SocketException soex)
@@ -94,30 +111,15 @@ namespace Client
                 tb.AppendText($"{text}{Environment.NewLine}");
             }
         }
-        private void Send(ClientMessage message)
-        {
-            using var ms = new MemoryStream();
-            using var bw = new BinaryWriter(ms);
-            int size = 0;
-            //Write initial size in bytes(4)
-            bw.Write(size);
-            //Write Message type in bytes(2)
-            bw.Write((short)message.Type);
-            //Write actual message in bytes(1 * message.Length)
-            bw.Write(message.Message);
-            //Go back to the size
-            bw.Seek(0, SeekOrigin.Begin);
-            //Write actual size
-            bw.Write((int)bw.BaseStream.Length - 4);
-            clientSocket.Send(ms.ToArray());
-        }
         private void ClientHome_FormClosing(object sender, FormClosingEventArgs e)
         {
+            if (!Utility.SocketConnected(clientSocket) && clientSocket == null) return;
+
+            message = new ClientMessage("Disconnected..", ActionType.DISCONNECTED);
+            Utility.Send(clientSocket, message);
+            isReading = false;
             try
             {
-                message = new ClientMessage("Disconnected..", ActionType.DISCONNECTED);
-                Send(message);
-                isReading = false;
                 clientSocket.Shutdown(SocketShutdown.Both);
             }
             finally

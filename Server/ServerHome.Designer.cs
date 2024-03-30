@@ -87,6 +87,7 @@
             MaximumSize = new Size(512, 512);
             Name = "ServerHome";
             Text = "Server";
+            FormClosing += ServerHome_FormClosing;
             FormClosed += ServerHome_FormClosed;
             ResumeLayout(false);
             PerformLayout();

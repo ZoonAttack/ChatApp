@@ -32,13 +32,13 @@ namespace Server
             {
                 //try
                 //{
-                    serverSocket.Listen(0);
-                    Socket clientSocket = serverSocket.Accept();
+                serverSocket.Listen(0);
+                Socket clientSocket = serverSocket.Accept();
 
-                    Client client = new Client(clientSocket, $"Guest_{Random.Shared.Next()}");
-                    clients.Add(client);
-                    Thread clientThread = new Thread(() => ClientConnection(client));
-                    clientThread.Start();
+                Client client = new Client(clientSocket, $"Guest_{Random.Shared.Next()}");
+                clients.Add(client);
+                Thread clientThread = new Thread(() => ClientConnection(client));
+                clientThread.Start();
                 //}
                 //catch (SocketException soex)
                 //{
@@ -87,12 +87,13 @@ namespace Server
                             break;
                         case ActionType.DISCONNECTED:
                             messageReceived = br.ReadString();
+                            client.Socket.Close();
                             clients.Remove(client);
                             UpdateUI(TB_Log, $"{client.Name} {messageReceived}");
-                            break;
+                            return;
                     }
                 }
-                catch(SocketException soex)
+                catch (SocketException soex)
                 {
                     serverSocket.Dispose();
                     clients.RemoveAll(clients.Remove);
@@ -114,9 +115,30 @@ namespace Server
 
         private void ServerHome_FormClosed(object sender, FormClosedEventArgs e)
         {
+        }
+
+        private void ServerHome_FormClosing(object sender, FormClosingEventArgs e)
+        {
             isReading = false;
-            serverSocket.Close();
-            Environment.Exit(0);
+            if (serverSocket != null)
+            {
+                ClientMessage message = new ClientMessage("Server has shutdown", ActionType.DISCONNECTED);
+                foreach(Client client in  clients)
+                {
+                    if (client.Socket == null || Utility.SocketConnected(client.Socket)) return;
+                    Utility.Send(client.Socket, message);
+                    try
+                    {
+                        client.Socket.Shutdown(SocketShutdown.Both);
+
+                    }
+                    finally
+                    {
+                        client.Socket.Close();
+                    }
+                    if(serverSocket != null)   serverSocket.Dispose();
+                }
+            }
         }
     }
 }
