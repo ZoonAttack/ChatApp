@@ -30,11 +30,15 @@ namespace Server
         {
             while (flag)
             {
+                Socket clientSocket = null;
                 //try
                 //{
                 serverSocket.Listen(0);
-                Socket clientSocket = serverSocket.Accept();
-
+                try
+                {
+                    clientSocket = serverSocket.Accept();
+                }
+                catch(SocketException ex) { MessageBox.Show(ex.Message); }
                 Client client = new Client(clientSocket, $"Guest_{Random.Shared.Next()}");
                 clients.Add(client);
                 Thread clientThread = new Thread(() => ClientConnection(client));
@@ -64,6 +68,7 @@ namespace Server
                 //{
                     buffer = new byte[sizeof(int)];
                     bytesRead = client.Socket.Receive(buffer);
+                    if (bytesRead == 0) return;
                     if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
 
                     int size = BitConverter.ToInt32(buffer, 0);
@@ -87,7 +92,7 @@ namespace Server
                             break;
                         case ActionType.DISCONNECTED:
                             messageReceived = br.ReadString();
-                            client.Socket.Close();
+                        client.Socket.Dispose();
                             clients.Remove(client);
                             UpdateUI(TB_Log, $"{client.Name} {messageReceived}");
                             return;
@@ -103,7 +108,7 @@ namespace Server
         }
         private void UpdateUI(TextBox tb, string text)
         {
-            if (this.Disposing) return;
+            if (this.Disposing || this.IsDisposed) return;
             if (tb.InvokeRequired)
             {
                 tb.Invoke(new Action(() => UpdateUI(tb, text)));
@@ -113,34 +118,17 @@ namespace Server
                 tb.AppendText($"{text}{Environment.NewLine}");
             }
         }
-
-        private void ServerHome_FormClosed(object sender, FormClosedEventArgs e)
-        {
-        }
-
         private void ServerHome_FormClosing(object sender, FormClosingEventArgs e)
         {
             isReading = false;
             flag = false;
-            if (serverSocket != null)
-            {
                 ClientMessage message = new ClientMessage("Server has shutdown", ActionType.DISCONNECTED);
                 foreach(Client client in  clients)
                 {
-                    if (client.Socket == null || Utility.SocketConnected(client.Socket)) return;
+                if (client.Socket?.Connected != true) return;
                     Utility.Send(client.Socket, message);
-                    try
-                    {
-                        client.Socket.Shutdown(SocketShutdown.Both);
-
-                    }
-                    finally
-                    {
-                        client.Socket.Close();
-                    }
-                    if(serverSocket != null)   serverSocket.Dispose();
                 }
-            }
+              serverSocket?.Dispose();
         }
     }
 }
