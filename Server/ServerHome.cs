@@ -92,7 +92,7 @@ namespace Server
                             break;
                         case ActionType.DISCONNECTED:
                             messageReceived = br.ReadString();
-                        client.Socket.Dispose();
+                            client.Socket.Dispose();
                             clients.Remove(client);
                             UpdateUI(TB_Log, $"{client.Name} {messageReceived}");
                             return;
@@ -106,18 +106,6 @@ namespace Server
                 //}
             }
         }
-        private void UpdateUI(TextBox tb, string text)
-        {
-            if (this.Disposing || this.IsDisposed) return;
-            if (tb.InvokeRequired)
-            {
-                tb.Invoke(new Action(() => UpdateUI(tb, text)));
-            }
-            else
-            {
-                tb.AppendText($"{text}{Environment.NewLine}");
-            }
-        }
         private void ServerHome_FormClosing(object sender, FormClosingEventArgs e)
         {
             isReading = false;
@@ -129,6 +117,18 @@ namespace Server
                     Utility.Send(client.Socket, message);
                 }
               serverSocket?.Dispose();
+        }
+        private void UpdateUI(TextBox tb, string text)
+        {
+            if (this.Disposing || this.IsDisposed) return;
+            if (tb.InvokeRequired)
+            {
+                tb.Invoke(new Action(() => UpdateUI(tb, text)));
+            }
+            else
+            {
+                tb.AppendText($"{text}{Environment.NewLine}");
+            }
         }
     }
 }
