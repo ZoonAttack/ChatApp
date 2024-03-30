@@ -102,18 +102,20 @@ namespace Client
         }
         private void UpdateUI(TextBox tb, string text)
         {
+            if (this.Disposing) return;
+
             if (tb.InvokeRequired)
             {
                 tb.Invoke(new Action(() => UpdateUI(tb, text)));
             }
             else
-            {
+            { 
                 tb.AppendText($"{text}{Environment.NewLine}");
             }
         }
         private void ClientHome_FormClosing(object sender, FormClosingEventArgs e)
         {
-            if (!Utility.SocketConnected(clientSocket) && clientSocket == null) return;
+            if (!Utility.SocketConnected(clientSocket) || clientSocket == null) return;
 
             message = new ClientMessage("Disconnected..", ActionType.DISCONNECTED);
             Utility.Send(clientSocket, message);

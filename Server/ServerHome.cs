@@ -60,8 +60,8 @@ namespace Server
                     isReading = false;
                     return;
                 }
-                try
-                {
+                //try
+                //{
                     buffer = new byte[sizeof(int)];
                     bytesRead = client.Socket.Receive(buffer);
                     if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
@@ -92,17 +92,18 @@ namespace Server
                             UpdateUI(TB_Log, $"{client.Name} {messageReceived}");
                             return;
                     }
-                }
-                catch (SocketException soex)
-                {
-                    serverSocket.Dispose();
-                    clients.RemoveAll(clients.Remove);
-                    UpdateUI(TB_Log, soex.Message);
-                }
+                //}
+                //catch (SocketException soex)
+                //{
+                //    serverSocket.Dispose();
+                //    clients.RemoveAll(clients.Remove);
+                //    UpdateUI(TB_Log, soex.Message);
+                //}
             }
         }
         private void UpdateUI(TextBox tb, string text)
         {
+            if (this.Disposing) return;
             if (tb.InvokeRequired)
             {
                 tb.Invoke(new Action(() => UpdateUI(tb, text)));
@@ -120,6 +121,7 @@ namespace Server
         private void ServerHome_FormClosing(object sender, FormClosingEventArgs e)
         {
             isReading = false;
+            flag = false;
             if (serverSocket != null)
             {
                 ClientMessage message = new ClientMessage("Server has shutdown", ActionType.DISCONNECTED);
