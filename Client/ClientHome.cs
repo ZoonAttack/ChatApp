@@ -79,15 +79,7 @@ namespace Client
                             messageReceived = br.ReadString();
                             isReading = false;
                             UpdateUI(TB_ChatBox, messageReceived);
-                        if (clientSocket?.Connected != true) return;
-                            try
-                            {
-                                clientSocket.Shutdown(SocketShutdown.Both);
-                            }
-                            finally
-                            {
-                                clientSocket.Close();
-                            }
+                        clientSocket.Disconnect(true);
                         return;
                     }
                 //}
@@ -113,17 +105,25 @@ namespace Client
             }
             else
             { 
-                tb.AppendText($"{text}{Environment.NewLine}");
+                tb.AppendText($"{text}");
+                tb.AppendText(Environment.NewLine);
             }
         }
         private void ClientHome_FormClosing(object sender, FormClosingEventArgs e)
         {
+            isReading = false;
             if (clientSocket?.Connected != true) return;
-
             message = new ClientMessage("Disconnected..", ActionType.DISCONNECTED);
             Utility.Send(clientSocket, message);
-            isReading = false;
-            //clientSocket.Close();
+            try
+            {
+                clientSocket.Shutdown(SocketShutdown.Both);
+
+            }
+            finally
+            {
+                clientSocket.Close();
+            }
         }
     }
 }

@@ -84,11 +84,13 @@ namespace Server
                         case ActionType.MESSAGE:
                             string messageReceived = br.ReadString();
                             UpdateUI(TB_Log, $"({client.Name}) sent: {messageReceived}{Environment.NewLine}");
+                            BroadcastMessage(client, $"({client.Name}) sent: {messageReceived}");
                             break;
                         case ActionType.USERNAME:
                             messageReceived = br.ReadString();
                             client.Name = messageReceived;
                             UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
+                            BroadcastMessage(client, $"({client.Name}) Has entered the chat! Say HI");
                             break;
                         case ActionType.DISCONNECTED:
                             messageReceived = br.ReadString();
@@ -127,12 +129,13 @@ namespace Server
             }
             else
             {
-                tb.AppendText($"{text}{Environment.NewLine}");
+                tb.AppendText($"{text}");
+                tb.AppendText(Environment.NewLine);
             }
 
         }
 
-        private void BroadcastMessage(Client sender, ClientMessage message)
+        private void BroadcastMessage(Client sender, string message)
         {
             foreach(Client client in clients)
             {
@@ -140,11 +143,11 @@ namespace Server
 
                 if(client == sender)
                 {
-                    Utility.Send(client.Socket, new ClientMessage(message.Message.Replace(sender.Name, "me")));
+                    Utility.Send(client.Socket, new ClientMessage(message.Replace(sender.Name, "me")));
                 }
                 else
                 {
-                    Utility.Send(client.Socket, message);
+                    Utility.Send(client.Socket, new ClientMessage(message));
                 }
             }
         }
