@@ -37,6 +37,8 @@
             BTN_Send = new Button();
             label2 = new Label();
             TB_Address = new TextBox();
+            TB_OnlineClients = new TextBox();
+            label3 = new Label();
             GP_Chat.SuspendLayout();
             SuspendLayout();
             // 
@@ -134,11 +136,33 @@
             TB_Address.Size = new Size(151, 23);
             TB_Address.TabIndex = 5;
             // 
+            // TB_OnlineClients
+            // 
+            TB_OnlineClients.Location = new Point(1, 220);
+            TB_OnlineClients.Multiline = true;
+            TB_OnlineClients.Name = "TB_OnlineClients";
+            TB_OnlineClients.ReadOnly = true;
+            TB_OnlineClients.Size = new Size(143, 228);
+            TB_OnlineClients.TabIndex = 6;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("OCRB", 15F, FontStyle.Regular, GraphicsUnit.Point);
+            label3.ForeColor = Color.Maroon;
+            label3.Location = new Point(1, 200);
+            label3.Name = "label3";
+            label3.Size = new Size(92, 17);
+            label3.TabIndex = 7;
+            label3.Text = "Clients";
+            // 
             // ClientHome
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             ClientSize = new Size(800, 450);
+            Controls.Add(label3);
+            Controls.Add(TB_OnlineClients);
             Controls.Add(TB_Address);
             Controls.Add(label2);
             Controls.Add(GP_Chat);
@@ -166,5 +190,7 @@
         private Button BTN_Send;
         private Label label2;
         private TextBox TB_Address;
+        private TextBox TB_OnlineClients;
+        private Label label3;
     }
 }

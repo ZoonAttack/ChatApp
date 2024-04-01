@@ -6,8 +6,12 @@ namespace Client
     public partial class ClientHome : Form
     {
         Socket clientSocket;
+
         bool isReading = true;
+
         ClientMessage message;
+
+        Dictionary<Guid, string> onlineCLients = new Dictionary<Guid, string>();
         public ClientHome()
         {
             InitializeComponent();
@@ -56,32 +60,35 @@ namespace Client
                 }
                 //try
                 //{
-                    buffer = new byte[sizeof(int)];
-                    bytesRead = clientSocket.Receive(buffer);
-                    if (bytesRead == 0) return;
-                    if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
+                buffer = new byte[sizeof(int)];
+                bytesRead = clientSocket.Receive(buffer);
+                if (bytesRead == 0) return;
+                if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
 
-                    int size = BitConverter.ToInt32(buffer, 0);
-                    buffer = new byte[size];
-                    bytesRead = clientSocket.Receive(buffer);
-                    if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
+                int size = BitConverter.ToInt32(buffer, 0);
+                buffer = new byte[size];
+                bytesRead = clientSocket.Receive(buffer);
+                if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
                 using var ms = new MemoryStream(buffer);
                 using var br = new BinaryReader(ms);
                 ActionType type = (ActionType)br.ReadInt16();
-                    string messageReceived;
-                    switch (type)
-                    {
-                        case ActionType.MESSAGE:
-                            messageReceived = br.ReadString();
-                            UpdateUI(TB_ChatBox, $"{messageReceived}{Environment.NewLine}");
-                            break;
-                        case ActionType.DISCONNECTED:
-                            messageReceived = br.ReadString();
-                            isReading = false;
-                            UpdateUI(TB_ChatBox, messageReceived);
+                string messageReceived;
+                switch (type)
+                {
+                    case ActionType.MESSAGE:
+                        messageReceived = br.ReadString();
+                        UpdateUI(TB_ChatBox, $"{messageReceived}{Environment.NewLine}");
+                        break;
+                    case ActionType.DISCONNECTED:
+                        messageReceived = br.ReadString();
+                        isReading = false;
+                        UpdateUI(TB_ChatBox, messageReceived);
                         clientSocket.Disconnect(true);
                         return;
-                    }
+                    case ActionType.UPDATELIST:
+
+                        break;
+                }
                 //}
                 //catch (SocketException soex)
                 //{
@@ -104,7 +111,7 @@ namespace Client
                 tb.Invoke(new Action(() => UpdateUI(tb, text)));
             }
             else
-            { 
+            {
                 tb.AppendText($"{text.Trim()}");
                 tb.AppendText(Environment.NewLine);
             }
