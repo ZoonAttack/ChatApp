@@ -38,7 +38,10 @@ namespace Server
                 {
                     clientSocket = serverSocket.Accept();
                 }
-                catch(SocketException ex) { MessageBox.Show(ex.Message); }
+                catch(ObjectDisposedException) 
+                { 
+                    //Ignore
+                }
                 Client client = new Client(clientSocket, $"Guest_{Random.Shared.Next()}");
                 clients.Add(client);
                 Thread clientThread = new Thread(() => ClientConnection(client));

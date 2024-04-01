@@ -11,6 +11,7 @@ namespace Server
         }
 
         public string Name { get; set; }
+        public Guid ID { get; init; } = Guid.NewGuid();
         public Socket Socket { get; set; }
     }
 }
