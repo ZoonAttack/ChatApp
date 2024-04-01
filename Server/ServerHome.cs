@@ -129,6 +129,25 @@ namespace Server
             {
                 tb.AppendText($"{text}{Environment.NewLine}");
             }
+
         }
+
+        private void BroadcastMessage(Client sender, ClientMessage message)
+        {
+            foreach(Client client in clients)
+            {
+                if(client.Socket?.Connected != true) return;
+
+                if(client == sender)
+                {
+                    Utility.Send(client.Socket, new ClientMessage(message.Message.Replace(sender.Name, "me")));
+                }
+                else
+                {
+                    Utility.Send(client.Socket, message);
+                }
+            }
+        }
+
     }
 }

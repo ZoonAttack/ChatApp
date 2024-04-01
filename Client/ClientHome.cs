@@ -100,7 +100,11 @@ namespace Client
         }
         private void UpdateUI(TextBox tb, string text)
         {
-            if (this.Disposing || this.IsDisposed) return;
+            if (this.Disposing || this.IsDisposed)
+            {
+                MessageBox.Show("Inside disposing");
+                return;
+            }
 
 
             if (tb.InvokeRequired)
@@ -119,7 +123,7 @@ namespace Client
             message = new ClientMessage("Disconnected..", ActionType.DISCONNECTED);
             Utility.Send(clientSocket, message);
             isReading = false;
-            clientSocket.Close();
+            //clientSocket.Close();
         }
     }
 }
