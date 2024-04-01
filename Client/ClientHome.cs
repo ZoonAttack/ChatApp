@@ -105,7 +105,7 @@ namespace Client
             }
             else
             { 
-                tb.AppendText($"{text}");
+                tb.AppendText($"{text.Trim()}");
                 tb.AppendText(Environment.NewLine);
             }
         }
