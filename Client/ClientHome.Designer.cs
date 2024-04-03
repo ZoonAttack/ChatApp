@@ -172,6 +172,7 @@
             Name = "ClientHome";
             Text = "Client";
             FormClosing += ClientHome_FormClosing;
+            Load += ClientHome_Load;
             GP_Chat.ResumeLayout(false);
             GP_Chat.PerformLayout();
             ResumeLayout(false);

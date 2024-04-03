@@ -38,8 +38,8 @@ namespace Server
                 {
                     clientSocket = serverSocket.Accept();
                 }
-                catch(ObjectDisposedException) 
-                { 
+                catch (ObjectDisposedException)
+                {
                     //Ignore
                 }
                 Client client = new Client(clientSocket, $"Guest_{Random.Shared.Next()}");
@@ -69,39 +69,43 @@ namespace Server
                 }
                 //try
                 //{
-                    buffer = new byte[sizeof(int)];
-                    bytesRead = client.Socket.Receive(buffer);
-                    if (bytesRead == 0) return;
-                    if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
+                buffer = new byte[sizeof(int)];
+                bytesRead = client.Socket.Receive(buffer);
+                if (bytesRead == 0) return;
+                if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
 
-                    int size = BitConverter.ToInt32(buffer, 0);
-                    buffer = new byte[size];
-                    bytesRead = client.Socket.Receive(buffer);
-                    if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
+                int size = BitConverter.ToInt32(buffer, 0);
+                buffer = new byte[size];
+                bytesRead = client.Socket.Receive(buffer);
+                if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
 
-                    using var ms = new MemoryStream(buffer);
-                    using var br = new BinaryReader(ms);
-                    ActionType type = (ActionType)br.ReadInt16();
-                    switch (type)
-                    {
-                        case ActionType.MESSAGE:
-                            string messageReceived = br.ReadString();
-                            UpdateUI(TB_Log, $"({client.Name}) sent: {messageReceived}{Environment.NewLine}");
-                            BroadcastMessage(client, $"({client.Name}) sent: {messageReceived}");
-                            break;
-                        case ActionType.USERNAME:
-                            messageReceived = br.ReadString();
-                            client.Name = messageReceived;
-                            UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
-                            BroadcastMessage(client, $"({client.Name}) Has entered the chat! Say HI");
-                            break;
-                        case ActionType.DISCONNECTED:
-                            messageReceived = br.ReadString();
-                            client.Socket.Dispose();
-                            clients.Remove(client);
-                            UpdateUI(TB_Log, $"{client.Name} {messageReceived}");
-                            return;
-                    }
+                using var ms = new MemoryStream(buffer);
+                using var br = new BinaryReader(ms);
+                ActionType type = (ActionType)br.ReadInt16();
+                switch (type)
+                {
+                    case ActionType.MESSAGE:
+                        string messageReceived = br.ReadString();
+                        UpdateUI(TB_Log, $"({client.Name}) sent: {messageReceived}{Environment.NewLine}");
+                        Broadcast(client, $"({client.Name}) sent: {messageReceived}");
+                        break;
+                    case ActionType.USERNAME:
+                        messageReceived = br.ReadString();
+                        client.Name = messageReceived;
+                        UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
+                        Broadcast(client, $"({client.Name}) Has entered the chat! Say HI");
+                        break;
+                    case ActionType.CONNECTED:
+                        UpdateUI(TB_Log, $"({client.Name}) has connected");
+                        BroadcastClientData(client, client.ID, client.Name);
+                        break;
+                    case ActionType.DISCONNECTED:
+                        messageReceived = br.ReadString();
+                        client.Socket.Dispose();
+                        clients.Remove(client);
+                        UpdateUI(TB_Log, $"{client.Name} {messageReceived}");
+                        return;
+                }
                 //}
                 //catch (SocketException soex)
                 //{
@@ -115,13 +119,13 @@ namespace Server
         {
             isReading = false;
             flag = false;
-                ClientMessage message = new ClientMessage("Server has shutdown", ActionType.DISCONNECTED);
-                foreach(Client client in  clients)
-                {
+            ClientMessage message = new ClientMessage("Server has shutdown", ActionType.DISCONNECTED);
+            foreach (Client client in clients)
+            {
                 if (client.Socket?.Connected != true) return;
-                    Utility.Send(client.Socket, message);
-                }
-              serverSocket?.Dispose();
+                Utility.Send(client.Socket, message);
+            }
+            serverSocket?.Dispose();
         }
         private void UpdateUI(TextBox tb, string text)
         {
@@ -138,22 +142,53 @@ namespace Server
 
         }
 
-        private void BroadcastMessage(Client sender, string message)
+        private void Broadcast(Client sender, string message, ActionType type = ActionType.MESSAGE)
         {
-            foreach(Client client in clients)
+            foreach (Client client in clients)
             {
-                if(client.Socket?.Connected != true) return;
+                if (client.Socket?.Connected != true) return;
 
-                if(client == sender)
+                if (client == sender)
                 {
-                    Utility.Send(client.Socket, new ClientMessage(message.Replace(sender.Name, "me")));
+                    Utility.Send(client.Socket, new ClientMessage(message.Replace(sender.Name, "me"), type));
                 }
                 else
                 {
-                    Utility.Send(client.Socket, new ClientMessage(message));
+                    Utility.Send(client.Socket, new ClientMessage(message, type));
                 }
             }
         }
+        private void BroadcastClientData(Client sender, Guid id, string username)
+        {
+            foreach(Client client in clients)
+            {
+                if (client.Socket?.Connected != true) return;
 
+                if (client == sender)
+                {
+                    SendClientData(client, id, "Me");
+                }
+                else
+                    SendClientData(client, id, username);
+            }
+        }
+        private void SendClientData(Client client, Guid id, string username)
+        {
+            using var ms = new MemoryStream();
+            using var bw = new BinaryWriter(ms);
+            int size = 0;
+            bw.Write(size);
+            bw.Write((short)ActionType.UPDATELIST);
+            bw.Write(id.ToString());
+            bw.Write(username);
+            bw.Seek(0, SeekOrigin.Begin);
+            bw.Write((int)bw.BaseStream.Length - 4);
+            client.Socket.Send(ms.ToArray());
+            
+        }
+        private void ServerHome_Load(object sender, EventArgs e)
+        {
+
+        }
     }
 }

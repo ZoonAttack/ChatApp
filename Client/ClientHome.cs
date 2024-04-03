@@ -86,6 +86,10 @@ namespace Client
                         clientSocket.Disconnect(true);
                         return;
                     case ActionType.UPDATELIST:
+                        Guid id = new Guid(br.ReadString());
+                        string username = br.ReadString();
+                        onlineCLients.Add(id, username);
+                        UpdateUI(TB_OnlineClients, username);
 
                         break;
                 }
@@ -131,6 +135,11 @@ namespace Client
             {
                 clientSocket.Close();
             }
+        }
+
+        private void ClientHome_Load(object sender, EventArgs e)
+        {
+
         }
     }
 }

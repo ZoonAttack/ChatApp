@@ -88,6 +88,7 @@
             Name = "ServerHome";
             Text = "Server";
             FormClosing += ServerHome_FormClosing;
+            Load += ServerHome_Load;
             ResumeLayout(false);
             PerformLayout();
         }
