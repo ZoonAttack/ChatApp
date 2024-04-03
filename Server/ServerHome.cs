@@ -11,6 +11,7 @@ namespace Server
         bool flag = false;
         bool isReading = true;
         List<Client> clients = new List<Client>();
+        Dictionary<Guid, string> onlineCLients = new Dictionary<Guid, string>();
         public ServerHome()
         {
             InitializeComponent();
@@ -38,7 +39,7 @@ namespace Server
                 {
                     clientSocket = serverSocket.Accept();
                 }
-                catch (ObjectDisposedException)
+                catch
                 {
                     //Ignore
                 }
@@ -95,19 +96,24 @@ namespace Server
                     //    UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
                     //    Broadcast(client, $"({client.Name}) Has entered the chat! Say HI");
                     //    break;
-                    case ActionType.CONNECTED:
+                    case ActionType.USERCONNECTED:
                         messageReceived = br.ReadString();
                         client.Name = messageReceived;
                         UpdateUI(TB_Log, $"({client.Name}) has connected");
-                        BroadcastClientData(client, client.ID, client.Name);
+                        onlineCLients.Add(client.ID, client.Name);
+                        Broadcast(client, client.Name, ActionType.USERCONNECTED);
                         UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
                         Broadcast(client, $"({client.Name}) Has entered the chat! Say HI");
+                        Broadcast(client, )
                         break;
-                    case ActionType.DISCONNECTED:
+                    case ActionType.USERDISCONNECTED:
                         messageReceived = br.ReadString();
                         client.Socket.Dispose();
+                        onlineCLients.Remove(client.ID);
                         clients.Remove(client);
                         UpdateUI(TB_Log, $"{client.Name} {messageReceived}");
+                        Broadcast(client, client.Name, ActionType.USERDISCONNECTED);
+                        Broadcast(client, $"{client.Name} {messageReceived}");
                         return;
                 }
                 //}
@@ -123,7 +129,7 @@ namespace Server
         {
             isReading = false;
             flag = false;
-            ClientMessage message = new ClientMessage("Server has shutdown", ActionType.DISCONNECTED);
+            ClientMessage message = new ClientMessage("Server has shutdown", ActionType.SERVERDISCONNECTED);
             foreach (Client client in clients)
             {
                 if (client.Socket?.Connected != true) return;
@@ -162,34 +168,34 @@ namespace Server
                 }
             }
         }
-        private void BroadcastClientData(Client sender, Guid id, string username)
-        {
-            foreach(Client client in clients)
-            {
-                if (client.Socket?.Connected != true) return;
+        //private void BroadcastClientData(Client sender)
+        //{
+        //    foreach (Client client in clients)
+        //    {
+        //        foreach (var pair in onlineCLients)
+        //        {
+        //            if (client == sender)
+        //                Utility.Send(client.Socket, new ClientMessage("Me", ActionType.UPDATELIST));
+        //            else
+        //                Utility.Send(client.Socket, new ClientMessage(pair.Value, ActionType.UPDATELIST));
 
-                if (client == sender)
-                {
-                    SendClientData(client, id, "Me");
-                }
-                else
-                    SendClientData(client, id, username);
-            }
-        }
-        private void SendClientData(Client client, Guid id, string username)
-        {
-            using var ms = new MemoryStream();
-            using var bw = new BinaryWriter(ms);
-            int size = 0;
-            bw.Write(size);
-            bw.Write((short)ActionType.UPDATELIST);
-            bw.Write(id.ToString());
-            bw.Write(username);
-            bw.Seek(0, SeekOrigin.Begin);
-            bw.Write((int)bw.BaseStream.Length - 4);
-            client.Socket.Send(ms.ToArray());
-            
-        }
+        //        }
+        //    }
+        //}
+        //private void SendClientData(Client client, Guid id, string username)
+        //{
+        //    using var ms = new MemoryStream();
+        //    using var bw = new BinaryWriter(ms);
+        //    int size = 0;
+        //    bw.Write(size);
+        //    bw.Write((short)ActionType.USERCONNECTED);
+        //    bw.Write(id.ToString());
+        //    bw.Write(username);
+        //    bw.Seek(0, SeekOrigin.Begin);
+        //    bw.Write((int)bw.BaseStream.Length - 4);
+        //    client.Socket.Send(ms.ToArray());
+
+        //}
         private void ServerHome_Load(object sender, EventArgs e)
         {
 

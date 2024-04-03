@@ -5,7 +5,8 @@
         MESSAGE = 0,
         USERNAME,
         UPDATELIST,
-        CONNECTED,
-        DISCONNECTED
+        USERCONNECTED,
+        USERDISCONNECTED,
+        SERVERDISCONNECTED
     }
 }

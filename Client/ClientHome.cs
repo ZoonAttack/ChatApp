@@ -10,8 +10,7 @@ namespace Client
         bool isReading = true;
 
         ClientMessage message;
-
-        Dictionary<Guid, string> onlineCLients = new Dictionary<Guid, string>();
+        List<string> onlineClients = new List<string>();
         public ClientHome()
         {
             InitializeComponent();
@@ -29,7 +28,7 @@ namespace Client
                 if (clientSocket.Connected)
                 {
                     //Send username
-                    message = new ClientMessage(TB_Username.Text, ActionType.CONNECTED);
+                    message = new ClientMessage(TB_Username.Text, ActionType.USERCONNECTED);
                     Utility.Send(clientSocket, message);
                     Thread incomingDataThread = new Thread(ReadingData);
                     incomingDataThread.Start();
@@ -79,19 +78,25 @@ namespace Client
                         messageReceived = br.ReadString();
                         UpdateUI(TB_ChatBox, $"{messageReceived}{Environment.NewLine}");
                         break;
-                    case ActionType.DISCONNECTED:
+                    case ActionType.SERVERDISCONNECTED:
                         messageReceived = br.ReadString();
                         isReading = false;
                         UpdateUI(TB_ChatBox, messageReceived);
                         clientSocket.Disconnect(true);
                         return;
                     case ActionType.UPDATELIST:
-                        MessageBox.Show("Incoming updatelist message"); 
-                        Guid id = new Guid(br.ReadString());
+                        foreach(string name in onlineClients)
+                        {
+                            UpdateUI(TB_OnlineClients, name);
+                        }
+                        break;
+                    case ActionType.USERCONNECTED:
                         string username = br.ReadString();
-                        onlineCLients.Add(id, username);
-                        UpdateUI(TB_OnlineClients, username);
-
+                        onlineClients.Add(username);
+                        break;
+                    case ActionType.USERDISCONNECTED:
+                        string disconnectedUsername = br.ReadString();
+                        onlineClients.Remove(disconnectedUsername);
                         break;
                 }
                 //}
@@ -102,7 +107,7 @@ namespace Client
                 //}
             }
         }
-        private void UpdateUI(TextBox tb, string text)
+        private void UpdateUI(TextBox tb, string text, bool connected = true)
         {
             if (this.Disposing || this.IsDisposed)
             {
@@ -113,10 +118,11 @@ namespace Client
 
             if (tb.InvokeRequired)
             {
-                tb.Invoke(new Action(() => UpdateUI(tb, text)));
+                tb.Invoke(new Action(() => UpdateUI(tb, text, connected)));
             }
             else
             {
+                if (!connected && tb == TB_OnlineClients) tb.Text = tb.Text.Replace(text, " ");
                 tb.AppendText($"{text.Trim()}");
                 tb.AppendText(Environment.NewLine);
             }
@@ -125,7 +131,7 @@ namespace Client
         {
             isReading = false;
             if (clientSocket?.Connected != true) return;
-            message = new ClientMessage("Disconnected..", ActionType.DISCONNECTED);
+            message = new ClientMessage("Disconnected..", ActionType.USERDISCONNECTED);
             Utility.Send(clientSocket, message);
             try
             {
