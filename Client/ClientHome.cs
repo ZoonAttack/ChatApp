@@ -29,7 +29,7 @@ namespace Client
                 if (clientSocket.Connected)
                 {
                     //Send username
-                    message = new ClientMessage(TB_Username.Text, ActionType.USERNAME);
+                    message = new ClientMessage(TB_Username.Text, ActionType.CONNECTED);
                     Utility.Send(clientSocket, message);
                     Thread incomingDataThread = new Thread(ReadingData);
                     incomingDataThread.Start();
@@ -86,6 +86,7 @@ namespace Client
                         clientSocket.Disconnect(true);
                         return;
                     case ActionType.UPDATELIST:
+                        MessageBox.Show("Incoming updatelist message"); 
                         Guid id = new Guid(br.ReadString());
                         string username = br.ReadString();
                         onlineCLients.Add(id, username);

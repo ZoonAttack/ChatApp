@@ -89,15 +89,19 @@ namespace Server
                         UpdateUI(TB_Log, $"({client.Name}) sent: {messageReceived}{Environment.NewLine}");
                         Broadcast(client, $"({client.Name}) sent: {messageReceived}");
                         break;
-                    case ActionType.USERNAME:
+                    //case ActionType.USERNAME:
+                    //    messageReceived = br.ReadString();
+                    //    client.Name = messageReceived;
+                    //    UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
+                    //    Broadcast(client, $"({client.Name}) Has entered the chat! Say HI");
+                    //    break;
+                    case ActionType.CONNECTED:
                         messageReceived = br.ReadString();
                         client.Name = messageReceived;
-                        UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
-                        Broadcast(client, $"({client.Name}) Has entered the chat! Say HI");
-                        break;
-                    case ActionType.CONNECTED:
                         UpdateUI(TB_Log, $"({client.Name}) has connected");
                         BroadcastClientData(client, client.ID, client.Name);
+                        UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
+                        Broadcast(client, $"({client.Name}) Has entered the chat! Say HI");
                         break;
                     case ActionType.DISCONNECTED:
                         messageReceived = br.ReadString();
