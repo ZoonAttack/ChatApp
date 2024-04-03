@@ -113,6 +113,7 @@ namespace Server
                         //Tell other clients a user has just left!
                         Broadcast(client, client.Name, ActionType.USERDISCONNECTED);
                         clients.Remove(client);
+
                         client.Socket.Dispose();
                         //Broadcast(client, $"({client.Name}) has disconnected");
                         return;
