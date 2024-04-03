@@ -203,15 +203,18 @@ namespace Server
         {
             using var ms = new MemoryStream();
             using var bw = new BinaryWriter(ms);
-
+            int size = 0;
+            bw.Write(size);
+            bw.Write((short)ActionType.UPDATELIST);
             //Writing the number of clients 
             bw.Write(clients.Count);
-            bw.Write((short)ActionType.UPDATELIST);
             foreach(Client client in clients)
             {
                 //Writing each name
                 bw.Write(client.Name);
             }
+            bw.Seek(0, SeekOrigin.Begin);
+            bw.Write((int)bw.BaseStream.Length - 4);
             clientSocket.Send(ms.ToArray());
         }
         private void ServerHome_Load(object sender, EventArgs e)

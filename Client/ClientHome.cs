@@ -27,7 +27,7 @@ namespace Client
                 clientSocket.Connect(EndPoint);
                 if (clientSocket.Connected)
                 {
-                    //Send username
+                    //Send USERCONNECTED
                     message = new ClientMessage(TB_Username.Text, ActionType.USERCONNECTED);
                     Utility.Send(clientSocket, message);
                     Thread incomingDataThread = new Thread(ReadingData);
@@ -85,10 +85,13 @@ namespace Client
                         clientSocket.Disconnect(true);
                         return;
                     case ActionType.UPDATELIST:
-                        for(int i = 0; i < size; i++)
+                        int clientsCount = br.ReadInt32();
+                        for(int i = 0; i < clientsCount; i++)
                         {
                             string message = br.ReadString();
-                            onlineClients.Add(message);
+                            if (message == "me") onlineClients.Add("me");
+                            else
+                                onlineClients.Add(message);
                             updateclientsTB(message, false);
                         }
                         break;
