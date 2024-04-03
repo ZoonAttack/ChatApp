@@ -11,7 +11,6 @@ namespace Server
         bool flag = false;
         bool isReading = true;
         List<Client> clients = new List<Client>();
-        Dictionary<Guid, string> onlineCLients = new Dictionary<Guid, string>();
         public ServerHome()
         {
             InitializeComponent();
@@ -97,23 +96,25 @@ namespace Server
                     //    Broadcast(client, $"({client.Name}) Has entered the chat! Say HI");
                     //    break;
                     case ActionType.USERCONNECTED:
+                        UpdateUI(TB_Log, $"({client.Name}) has connected");
                         messageReceived = br.ReadString();
                         client.Name = messageReceived;
-                        UpdateUI(TB_Log, $"({client.Name}) has connected");
-                        onlineCLients.Add(client.ID, client.Name);
-                        Broadcast(client, client.Name, ActionType.USERCONNECTED);
                         UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
+                        SendList(client.Socket);
+
+                        //Tell other clients a user has just joined!
+                        Broadcast(client, client.Name, ActionType.USERCONNECTED);
+
                         Broadcast(client, $"({client.Name}) Has entered the chat! Say HI");
-                        Broadcast(client, )
                         break;
                     case ActionType.USERDISCONNECTED:
-                        messageReceived = br.ReadString();
-                        client.Socket.Dispose();
-                        onlineCLients.Remove(client.ID);
-                        clients.Remove(client);
-                        UpdateUI(TB_Log, $"{client.Name} {messageReceived}");
+                        UpdateUI(TB_Log, $"({client.Name}) has disconnected");
+
+                        //Tell other clients a user has just left!
                         Broadcast(client, client.Name, ActionType.USERDISCONNECTED);
-                        Broadcast(client, $"{client.Name} {messageReceived}");
+                        clients.Remove(client);
+                        client.Socket.Dispose();
+                        //Broadcast(client, $"({client.Name}) has disconnected");
                         return;
                 }
                 //}
@@ -196,6 +197,22 @@ namespace Server
         //    client.Socket.Send(ms.ToArray());
 
         //}
+
+        private void SendList(Socket clientSocket)
+        {
+            using var ms = new MemoryStream();
+            using var bw = new BinaryWriter(ms);
+
+            //Writing the number of clients 
+            bw.Write(clients.Count);
+            bw.Write((short)ActionType.UPDATELIST);
+            foreach(Client client in clients)
+            {
+                //Writing each name
+                bw.Write(client.Name);
+            }
+            clientSocket.Send(ms.ToArray());
+        }
         private void ServerHome_Load(object sender, EventArgs e)
         {
 

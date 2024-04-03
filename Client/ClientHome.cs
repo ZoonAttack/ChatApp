@@ -85,18 +85,22 @@ namespace Client
                         clientSocket.Disconnect(true);
                         return;
                     case ActionType.UPDATELIST:
-                        foreach(string name in onlineClients)
+                        for(int i = 0; i < size; i++)
                         {
-                            UpdateUI(TB_OnlineClients, name);
+                            string message = br.ReadString();
+                            onlineClients.Add(message);
+                            updateclientsTB(message, false);
                         }
                         break;
                     case ActionType.USERCONNECTED:
                         string username = br.ReadString();
                         onlineClients.Add(username);
+                        updateclientsTB(username, false);
                         break;
                     case ActionType.USERDISCONNECTED:
                         string disconnectedUsername = br.ReadString();
                         onlineClients.Remove(disconnectedUsername);
+                        updateclientsTB(disconnectedUsername, true);
                         break;
                 }
                 //}
@@ -127,6 +131,29 @@ namespace Client
                 tb.AppendText(Environment.NewLine);
             }
         }
+        private void updateclientsTB(string text, bool remove)
+        {
+            if (this.Disposing || this.IsDisposed)
+            {
+                MessageBox.Show("Inside disposing");
+                return;
+            }
+            if(TB_OnlineClients.InvokeRequired)
+            {
+                TB_OnlineClients.Invoke(new Action(() => updateclientsTB(text, remove)));
+            }
+            else
+            {
+                if (!remove)
+                {
+                    TB_OnlineClients.AppendText(text.Trim());
+                    TB_OnlineClients.AppendText(Environment.NewLine);
+                }
+                else
+                    TB_OnlineClients.Text = TB_OnlineClients.Text.Replace(text, " ");
+            }
+        }
+
         private void ClientHome_FormClosing(object sender, FormClosingEventArgs e)
         {
             isReading = false;
