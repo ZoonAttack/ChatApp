@@ -89,9 +89,17 @@ namespace Client
                         for(int i = 0; i < clientsCount; i++)
                         {
                             string message = br.ReadString();
-                            if (message == "me") onlineClients.Add("me");
-                            else
-                                onlineClients.Add(message);
+                            //if (message == TB_Username.Text)
+                            //{
+                            //    onlineClients.Add("me");
+                            //    updateclientsTB("me", false);
+                            //}
+                            //else
+                            //{
+                            //    onlineClients.Add(message);
+                            //    updateclientsTB(message, false);
+                            //}
+                            onlineClients.Add(message);
                             updateclientsTB(message, false);
                         }
                         break;

@@ -160,8 +160,9 @@ namespace Server
             {
                 if (client.Socket?.Connected != true) return;
 
-                if (client == sender)
+                if (client.Name == sender.Name)
                 {
+                    if (type == ActionType.USERCONNECTED) continue;
                     Utility.Send(client.Socket, new ClientMessage(message.Replace(sender.Name, "me"), type));
                 }
                 else
