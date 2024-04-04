@@ -160,15 +160,9 @@ namespace Server
             {
                 if (client.Socket?.Connected != true) return;
 
-                if (client.Name == sender.Name)
-                {
-                    //if (type == ActionType.USERCONNECTED) continue;
-                    Utility.Send(client.Socket, new ClientMessage(message.Replace(sender.Name, "me"), type));
-                }
-                else
-                {
-                    Utility.Send(client.Socket, new ClientMessage(message, type));
-                }
+                if (type == ActionType.USERCONNECTED && client.Name == sender.Name) continue;
+
+                Utility.Send(client.Socket, new ClientMessage(message, type));
             }
         }
         //private void BroadcastClientData(Client sender)
@@ -208,10 +202,10 @@ namespace Server
             bw.Write(size);
             bw.Write((short)ActionType.UPDATELIST);
             //Writing the number of clients 
-            bw.Write(clients.Count - 1);
+            bw.Write(clients.Count);
             foreach(Client client in clients)
             {
-                if (client.Name == sender.Name) continue;
+                //if (client.Name == sender.Name) continue;
                 //Writing each name
                 bw.Write(client.Name);
             }

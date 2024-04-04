@@ -89,6 +89,7 @@ namespace Client
                         for(int i = 0; i < clientsCount; i++)
                         {
                             string message = br.ReadString();
+                            if (message == TB_Username.Text) message = "me";
                             //if (message == TB_Username.Text)
                             //{
                             //    onlineClients.Add("me");
@@ -161,7 +162,9 @@ namespace Client
                     TB_OnlineClients.AppendText(Environment.NewLine);
                 }
                 else
+                {
                     TB_OnlineClients.Text = TB_OnlineClients.Text.Replace(text, " ");
+                }
             }
         }
 
