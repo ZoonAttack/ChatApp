@@ -162,7 +162,10 @@ namespace Server
 
                 if (type == ActionType.USERCONNECTED && client.Name == sender.Name) continue;
 
-                Utility.Send(client.Socket, new ClientMessage(message, type));
+                if (client.Name == sender.Name) 
+                    Utility.Send(client.Socket, new ClientMessage(message.Replace(sender.Name, "me"), type));
+                else
+                    Utility.Send(client.Socket, new ClientMessage(message, type));
             }
         }
         //private void BroadcastClientData(Client sender)
