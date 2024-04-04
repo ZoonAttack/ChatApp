@@ -100,7 +100,7 @@ namespace Server
                         messageReceived = br.ReadString();
                         client.Name = messageReceived;
                         UpdateUI(TB_Log, $"Set Client: {client.Name}'s name to {messageReceived}");
-                        SendList(client.Socket);
+                        SendList(client);
 
                         //Tell other clients a user has just joined!
                         Broadcast(client, client.Name, ActionType.USERCONNECTED);
@@ -162,7 +162,7 @@ namespace Server
 
                 if (client.Name == sender.Name)
                 {
-                    if (type == ActionType.USERCONNECTED) continue;
+                    //if (type == ActionType.USERCONNECTED) continue;
                     Utility.Send(client.Socket, new ClientMessage(message.Replace(sender.Name, "me"), type));
                 }
                 else
@@ -200,7 +200,7 @@ namespace Server
 
         //}
 
-        private void SendList(Socket clientSocket)
+        private void SendList(Client sender)
         {
             using var ms = new MemoryStream();
             using var bw = new BinaryWriter(ms);
@@ -208,15 +208,16 @@ namespace Server
             bw.Write(size);
             bw.Write((short)ActionType.UPDATELIST);
             //Writing the number of clients 
-            bw.Write(clients.Count);
+            bw.Write(clients.Count - 1);
             foreach(Client client in clients)
             {
+                if (client.Name == sender.Name) continue;
                 //Writing each name
                 bw.Write(client.Name);
             }
             bw.Seek(0, SeekOrigin.Begin);
             bw.Write((int)bw.BaseStream.Length - 4);
-            clientSocket.Send(ms.ToArray());
+            sender.Socket.Send(ms.ToArray());
         }
         private void ServerHome_Load(object sender, EventArgs e)
         {
