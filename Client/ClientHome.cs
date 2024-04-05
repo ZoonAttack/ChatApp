@@ -38,12 +38,15 @@ namespace Client
                 //{
                 //    MessageBox.Show(ex.Message);
                 //}
+                BTN_Connect.Enabled = false;
+                TB_Username.Visible = false;
             }
         }
         private void BTN_Send_Click(object sender, EventArgs e)
         {
             message = new ClientMessage(TB_Message.Text, ActionType.MESSAGE);
             Utility.Send(clientSocket, message);
+            TB_Message.Clear();
         }
         private void ReadingData()
         {
@@ -175,7 +178,13 @@ namespace Client
                 clientSocket.Close();
             }
         }
-
+        private void input_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyData == Keys.Enter)
+            {
+                BTN_Send.PerformClick();
+            }
+        }
         private void ClientHome_Load(object sender, EventArgs e)
         {
 

@@ -77,6 +77,7 @@ namespace Server
                 int size = BitConverter.ToInt32(buffer, 0);
                 buffer = new byte[size];
                 bytesRead = client.Socket.Receive(buffer);
+                MessageBox.Show(bytesRead.ToString());
                 if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
 
                 using var ms = new MemoryStream(buffer);
@@ -114,7 +115,7 @@ namespace Server
                         Broadcast(client, client.Name, ActionType.USERDISCONNECTED);
                         clients.Remove(client);
 
-                        client.Socket.Dispose();
+                        //client.Socket.Dispose();
                         //Broadcast(client, $"({client.Name}) has disconnected");
                         return;
                 }
