@@ -93,6 +93,7 @@
             TB_Message.Location = new Point(0, 267);
             TB_Message.Multiline = true;
             TB_Message.Name = "TB_Message";
+            TB_Message.ScrollBars = ScrollBars.Vertical;
             TB_Message.Size = new Size(480, 67);
             TB_Message.TabIndex = 7;
             // 
@@ -102,6 +103,8 @@
             TB_ChatBox.Location = new Point(0, 22);
             TB_ChatBox.Multiline = true;
             TB_ChatBox.Name = "TB_ChatBox";
+            TB_ChatBox.ReadOnly = true;
+            TB_ChatBox.ScrollBars = ScrollBars.Vertical;
             TB_ChatBox.Size = new Size(574, 219);
             TB_ChatBox.TabIndex = 6;
             // 

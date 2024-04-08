@@ -89,11 +89,11 @@ namespace Client
                         return;
                     case ActionType.UPDATELIST:
                         int clientsCount = br.ReadInt32();
-                        for(int i = 0; i < clientsCount; i++)
+                        for (int i = 0; i < clientsCount; i++)
                         {
                             string message = br.ReadString();
                             if (message == TB_Username.Text) message = "me";
-                            
+
                             onlineClients.Add(message);
                             updateclientsTB(message, false);
                         }
@@ -144,7 +144,7 @@ namespace Client
                 MessageBox.Show("Inside disposing");
                 return;
             }
-            if(TB_OnlineClients.InvokeRequired)
+            if (TB_OnlineClients.InvokeRequired)
             {
                 TB_OnlineClients.Invoke(new Action(() => updateclientsTB(text, remove)));
             }
@@ -187,7 +187,7 @@ namespace Client
         }
         private void ClientHome_Load(object sender, EventArgs e)
         {
-
+            TB_Message.MaxLength = int.MaxValue;
         }
     }
 }

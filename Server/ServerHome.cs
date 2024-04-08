@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Net;
 using System.Net.Sockets;
 using Communicator;
@@ -23,6 +24,8 @@ namespace Server
             serverSocket.Bind(EndPoint);
             TB_Log.AppendText($"({DateTime.Now.Date}) Server has started with address: {EndPoint.Address}{Environment.NewLine}");
             flag = true;
+            serverSocket.ReceiveBufferSize = 128;
+            serverSocket.SendBufferSize = 128;
             Thread serverThread = new Thread(Listening);
             serverThread.Start();
         }
@@ -43,6 +46,8 @@ namespace Server
                     //Ignore
                 }
                 Client client = new Client(clientSocket, $"Guest_{Random.Shared.Next()}");
+                client.Socket.ReceiveBufferSize = 128;
+                client.Socket.SendBufferSize = 128;
                 clients.Add(client);
                 Thread clientThread = new Thread(() => ClientConnection(client));
                 clientThread.Start();
@@ -76,10 +81,15 @@ namespace Server
 
                 int size = BitConverter.ToInt32(buffer, 0);
                 buffer = new byte[size];
-                bytesRead = client.Socket.Receive(buffer);
-                MessageBox.Show(bytesRead.ToString());
+                int dataRemaining = buffer.Length;
+                int offset = 0;
+                while(dataRemaining > 0)
+                {
+                     bytesRead = client.Socket.Receive(buffer, offset, dataRemaining, SocketFlags.None);
+                     dataRemaining -= bytesRead;
+                     offset += bytesRead;
+                }
                 if (bytesRead != buffer.Length) throw new InvalidDataException($"Got {bytesRead} Expected {buffer.Length}");
-
                 using var ms = new MemoryStream(buffer);
                 using var br = new BinaryReader(ms);
                 ActionType type = (ActionType)br.ReadInt16();
@@ -118,6 +128,9 @@ namespace Server
                         //client.Socket.Dispose();
                         //Broadcast(client, $"({client.Name}) has disconnected");
                         return;
+                    default:
+                        Debug.WriteLine("Something hit");
+                        break;
                 }
                 //}
                 //catch (SocketException soex)
@@ -219,7 +232,7 @@ namespace Server
         }
         private void ServerHome_Load(object sender, EventArgs e)
         {
-
+            
         }
     }
 }
