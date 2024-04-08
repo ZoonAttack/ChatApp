@@ -89,6 +89,7 @@
             // 
             // TB_Message
             // 
+            TB_Message.Anchor = AnchorStyles.Bottom;
             TB_Message.Font = new Font("OCRB", 10F, FontStyle.Regular, GraphicsUnit.Point);
             TB_Message.Location = new Point(0, 267);
             TB_Message.Multiline = true;
@@ -96,6 +97,7 @@
             TB_Message.ScrollBars = ScrollBars.Vertical;
             TB_Message.Size = new Size(480, 67);
             TB_Message.TabIndex = 7;
+            TB_Message.KeyDown += TB_Message_KeyDown;
             // 
             // TB_ChatBox
             // 

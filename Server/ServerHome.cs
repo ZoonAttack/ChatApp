@@ -24,8 +24,6 @@ namespace Server
             serverSocket.Bind(EndPoint);
             TB_Log.AppendText($"({DateTime.Now.Date}) Server has started with address: {EndPoint.Address}{Environment.NewLine}");
             flag = true;
-            serverSocket.ReceiveBufferSize = 128;
-            serverSocket.SendBufferSize = 128;
             Thread serverThread = new Thread(Listening);
             serverThread.Start();
         }
@@ -46,8 +44,6 @@ namespace Server
                     //Ignore
                 }
                 Client client = new Client(clientSocket, $"Guest_{Random.Shared.Next()}");
-                client.Socket.ReceiveBufferSize = 128;
-                client.Socket.SendBufferSize = 128;
                 clients.Add(client);
                 Thread clientThread = new Thread(() => ClientConnection(client));
                 clientThread.Start();

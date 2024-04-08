@@ -178,16 +178,17 @@ namespace Client
                 clientSocket.Close();
             }
         }
-        private void input_KeyDown(object sender, KeyEventArgs e)
-        {
-            if (e.KeyData == Keys.Enter)
-            {
-                BTN_Send.PerformClick();
-            }
-        }
         private void ClientHome_Load(object sender, EventArgs e)
         {
             TB_Message.MaxLength = int.MaxValue;
+        }
+
+        private void TB_Message_KeyDown(object sender, KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Enter)
+            {
+                BTN_Send_Click(this, new EventArgs());
+            }
         }
     }
 }
